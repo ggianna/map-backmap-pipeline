@@ -1,0 +1,5 @@
+mol modcolor 0 0 ResName
+mol modstyle 0 0 CPK 1.000000 0.000000 12.000000 12.000000
+display resetview
+render snapshot Datasets/ethane_1mol_2000/mapping_2022_07_08_143746/ethane_1mol_2000_1_backmapping.bmp
+exit

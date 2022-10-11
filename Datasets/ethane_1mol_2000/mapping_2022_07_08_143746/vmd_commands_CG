@@ -1,0 +1,11 @@
+mol modcolor 0 0 ResName
+mol modstyle 0 0 VDW 1.000000 12.000000
+mol modmaterial 0 0 Transparent
+mol new Datasets/ethane_1mol_2000/mapping_2022_07_08_143746/ethane_1mol_2000_1_AA.pdb
+mol addrep 1
+mol modcolor 0 1 ResName
+mol modstyle 0 1 CPK 1.000000 0.300000 12.000000 12.000000
+display resetview
+render snapshot Datasets/ethane_1mol_2000/mapping_2022_07_08_143746/ethane_1mol_2000_1_mapping.bmp
+save_state Datasets/ethane_1mol_2000/mapping_2022_07_08_143746/ethane_1mol_2000_1_scene.tmp
+exit

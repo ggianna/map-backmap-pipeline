@@ -1,27 +1,32 @@
+import numpy as np
+import torch
+
 class BackMapper():
-    """Initialize an object from the latent dimensions that is for decoded. 
-    """
-    def __init__(self,data):
-        self.data = data
+
+     def __init__(self, latent_dim_back_map, original_dim):
+        self.latent_dim_back_map = latent_dim_back_map
+        self.original_dim = original_dim 
+        if self.latent_dim_back_map > self.original_dim:
+            raise ArithmeticError("The latent dimension cannot be higher than the original dimension.")
+         
+
+     def back_mapping(self, latent_config_vector):
+         return np.pad(latent_config_vector, self.original_dim - self.latent_dim_back_map) # TODO: Fix this
+
+     def get_latent_dim(self):
+        return self.latent_dim_back_map
+
+     def get_original_dim(self):
+        return self.original_dim
 
 
 
-class Decoder(BackMapper):
-    def __init__(self,data,input_dim, hidden_dim, final_dim):
-        """Parameters
-           ----------
-           input_dim Dimension of our input data(after encoder):, 
-           hidden_dim:Number of hidden layers,
-           final_dim: The original dimensions of our input data before encoding"""
-        super.__init__(data)
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.latent_dim = final_dim
 
 
-class DummyBackMapper(BackMapper):
-    """It was created for familirization purposes.
-       It takes the input data and returns the same"""
-    def convert(self,data):
-        self.data = data 
-        return self     
+# Unit test
+if __name__ == "__main__":
+   # Example of use
+   myBackMapper = BackMapper(2, 10)
+   myMappedResult = myBackMapper.back_map(torch.tensor(np.array([1,2])))
+   print(myMappedResult)
+   ################

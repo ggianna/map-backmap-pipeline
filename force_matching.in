@@ -1,0 +1,39 @@
+#### Simulation Data ####
+directory         Datasets/ethane_1mol_2000/          # Relative path to the simulation data
+trajectory        ethane_1mol_2000.dump              # LAMMPS .dump file with the atomistic trajectory. Expected format : id mol type q x y z ix iy iz fx fy fz
+data_file         ethane_1mol_2000.data              # LAMMPS .data file name
+assignments       ethane_1mol_2000.map            # Template assignment for 1 molecule atoms in the system
+n_frames          2000                          # Number of frames to load from the trajectory, starting from the beginnning
+n_atoms_mol       8                              # Number of atoms per molecule. Currently only systems with all equal molecules are supported
+n_molecules       1                            # Number of molecules
+n_CG_mol          2                               # Number of CG moieties per molecule
+periodic          False                     # Does the systems have periodic boundaries?
+
+
+
+#### Training Parameters ###
+learning_rate     1e-4                            # Learning rate
+decay_ratio       0.3                             # Decay ratio
+batch_size        1                              # Batch size
+patience          10                              # Patience
+min_change        0.01                            # Min Change
+n_epochs          10                              # Number of training epochs
+device            cuda                             # Specify the backend for training: cpu or cuda. If cuda is unavailable, it defaults to cpu.
+
+#### Model Parameters ###
+feature           SchNet                          # Feature to use to represent the molecular system
+feature_size      50                             # Number of nodes in the SchNet feature
+n_gaussians       30                              # Number of gaussians for the representation of distances in the SchNet feature
+n_filters         40                             # Number of nodes in the CfConv layers
+n_blocks          2                               # Number of SchNet interaction blocks
+cutoff            15                              # Cutoff for inclusion in the neighbors list (Angstroem)
+n_layers          2                               # Number of layers in the force model
+excl_vol_prior    True
+excl_vol_sigma    4.7
+excl_vol_exp      12
+
+#### Output Parameters ###
+overwrite         False                             # Overwrite previous output (True) or create a new folder for the current run (False)
+save_every        5                                # Frequency of saving the model. 0 means only final output
+plot_flag         False                            # Output loss plots and assignment
+run_description   debug                    # Description of the run scope
