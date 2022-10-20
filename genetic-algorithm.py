@@ -9,7 +9,7 @@ from time import time
 
 #-----------------------------------
 
-def main_genetic_algorithm(lower_range_value=0.5, upper_range_value=5.0, mutation_values_pool=None, mut_probability=None):
+def main_genetic_algorithm(lower_range_value= -5.0, upper_range_value=5.0, mutation_values_pool=None, mut_probability=None):
     """Main function creating and running a genetic algorithm
 
     This function sets the values of the parameters for the constructor of 
@@ -46,16 +46,16 @@ def main_genetic_algorithm(lower_range_value=0.5, upper_range_value=5.0, mutatio
     """
 
     # Mandatory parameters
-    num_generations = 200  # number of generations
+    num_generations = 15  # number of generations
     num_parents_mating = 2  # number of parents to mate
-    fitness_func = lengths_fitness_function  # user-defined fitness function
-    #fitness_func = coordinates_fitness_function  # (*)
-
+    #fitness_func = lengths_fitness_function  # user-defined fitness function
+    fitness_func = coordinates_fitness_function  # (*)
+    
     # Optional parameters
     initial_population = None  # user-specified initial population
     sol_per_pop = 2000  # number of chromosomes/frames per generation
-    num_genes = 28  # number genes/bond-lengths per chromosome
-    #num_genes = 24  # (*)
+    #num_genes = 28  # number genes/bond-lengths per chromosome
+    num_genes = 24  # (*)
     gene_type = float  # gene type
     init_range_low = lower_range_value  # lower value of random genes
     #init_range_low = -2.0  # (*)
@@ -68,15 +68,15 @@ def main_genetic_algorithm(lower_range_value=0.5, upper_range_value=5.0, mutatio
     crossover_probability = None  # probability to apply crossover to a parent
     mutation_type = "random"  # type of mutation operation
     mutation_probability = mut_probability  # probability of mutating a gene
-    mutation_by_replacement = True  # whether apply replacement (True) or summation (False) as mutation
-    #mutation_by_replacement = False  # (*)
+    #mutation_by_replacement = True  # whether apply replacement (True) or summation (False) as mutation
+    mutation_by_replacement = False  # (*)
     mutation_percent_genes = "default"  # = 10, percentage of genes to mutate
     mutation_num_genes = None  # number of genes to mutate
 
     if mutation_values_pool is None:
-        random_mutation_min_val = 0.5  # lower number to be used in mutation process
+        random_mutation_min_val = -1.0  # lower number to be used in mutation process
         #random_mutation_min_val = -0.1  # (*)
-        random_mutation_max_val = 5.0  # upper value to be used in mutation process
+        random_mutation_max_val = 1.0  # upper value to be used in mutation process
         #random_mutation_max_val = 0.1  # (*)
         gene_space = None  # set of values for each gene to be used in mutation process
     else:
@@ -93,7 +93,7 @@ def main_genetic_algorithm(lower_range_value=0.5, upper_range_value=5.0, mutatio
     on_generation = None
     on_stop = None
     delay_after_gen = 0.0
-    save_best_solutions = False  # save best solution in each generation in attribute best_solutions
+    save_best_solutions = True  # save best solution in each generation in attribute best_solutions
     save_solutions = False
     suppress_warnings = False
     allow_duplicate_genes = True
@@ -114,6 +114,7 @@ def main_genetic_algorithm(lower_range_value=0.5, upper_range_value=5.0, mutatio
                      init_range_low=init_range_low,
                      init_range_high=init_range_high,
                      parent_selection_type=parent_selection_type,
+                     keep_elitism = keep_elitism,
                      keep_parents=keep_parents,
                      crossover_type=crossover_type,
                      crossover_probability=crossover_probability,
@@ -140,6 +141,7 @@ def main_genetic_algorithm(lower_range_value=0.5, upper_range_value=5.0, mutatio
                      allow_duplicate_genes=allow_duplicate_genes,
                      stop_criteria=stop_criteria,
                      parallel_processing=parallel_processing,
+                     random_seed = random_seed
 
                     )
 
@@ -150,24 +152,25 @@ def main_genetic_algorithm(lower_range_value=0.5, upper_range_value=5.0, mutatio
     # access best solution found
     ga_instance.plot_fitness()
     solution, solution_fitness, solution_idx = ga_instance.best_solution()
-    print("Parameters of the best solution (coordinates) : {solution}".format(solution=solution))
+    
 
     # turn coordinates list into bond lengths list
-    #position_vectors_list = [array(solution[i:(i + 3)]) 
-    #                         for i in range(0, len(solution), 3)]
+    position_vectors_list = [array(solution[i:(i + 3)]) for i in range(0, len(solution), 3)]
 
-    #bond_lengths_list = []
-    #atoms_counted = 0
-    #for position_vector_1 in position_vectors_list[:-1]:
-    #    for position_vector_2 in position_vectors_list[(atoms_counted + 1):]:
-    #        bond_vector = subtract(position_vector_2, position_vector_1)
-    #        bond_lengths_list.append(norm(bond_vector, 2))
+    bond_lengths_list = []
+    atoms_counted = 0
+    for position_vector_1 in position_vectors_list[:-1]:
+        for position_vector_2 in position_vectors_list[(atoms_counted + 1):]:
+            bond_vector = subtract(position_vector_2, position_vector_1)
+            bond_lengths_list.append(norm(bond_vector, 2))
         
-    #    atoms_counted += 1
-        
-    #print("Parameters of the best solution (bond lengths) : {solution}".format(solution=bond_lengths_list))    
+        atoms_counted += 1
+    print("Parameters of the best solution (coordinates) : {solution}".format(solution=solution)) 
+    print("Parameters of the best solution (bond lengths) : {solution}".format(solution=bond_lengths_list))    
     print("Fitness value of the best solution = {solution_fitness}".format(solution_fitness=solution_fitness))
     print("Index of the best solution : {solution_idx}".format(solution_idx=solution_idx))
+    print(centers(solution))
+    
 
     return None
 
@@ -179,12 +182,12 @@ def coordinates_fitness_function(chromosome, chromosome_idx):
     and returning its fitness score based on its bond lengths and the PDFs.
     """
     
+    
     number_of_atoms = int(len(chromosome) / 3.0)  # three coordinates per atom
     number_of_unique_bond_lengths = int((number_of_atoms**2 - number_of_atoms) / 2.0)
 
     # list containing the triplets of coordinates of each atom as arrays
-    position_vectors_list = [array(chromosome[i:(i + 3)]) 
-                             for i in range(0, len(chromosome), 3)]
+    position_vectors_list = [array(chromosome[i:(i + 3)]) for i in range(0, len(chromosome), 3)]
 
     # turn coordinates list into bond lengths list
     bond_lengths_list = []
@@ -200,8 +203,13 @@ def coordinates_fitness_function(chromosome, chromosome_idx):
         print(f"Error: len(bond_lengths_list): {len(bond_lengths_list)} is not equal to " \
             + f"number_of_unique_bond_lengths: {number_of_unique_bond_lengths}!")
         quit()
+
+    from numpy import linalg as LA
+    center = centers(chromosome)
+
+    distance_from_zero = LA.norm(center,2)    
         
-    score = lengths_fitness_function(bond_lengths_list, chromosome_idx)
+    score = lengths_fitness_function(bond_lengths_list, chromosome_idx) + (1/(distance_from_zero+0.0000001))
 
     return score
 
@@ -243,6 +251,46 @@ def PDF_HH(r, X21, s21, A21, X22, s22, A22, X1, s1, A1):
     W = J21 + J22 + g1
 
     return W
+
+
+import numpy as np #Function that returns each coordinate of the geometric center of a molecule 
+
+
+def centers(chromosome):
+
+    avg_coords = 0*[3]
+    sum1= 0
+    sum2= 0
+    sum3 =0
+    for i in range(0, len(chromosome), 3):
+        sum1 = sum1 + chromosome[i]
+
+    for j in range(1,len(chromosome),3):
+        sum2 = sum2+chromosome[j]   
+
+
+    for k in range(2,len(chromosome),3):
+        sum3 = sum3+chromosome[k]
+
+    x_coord = sum1/8  
+    y_coord = sum2/8
+    z_coord = sum3/8
+
+
+    avg_coords.append(x_coord)
+    avg_coords.append(y_coord)
+    avg_coords.append(z_coord)
+
+
+    return avg_coords
+    
+
+
+def center_of_mass(masses): # x,y,z,value
+    import numpy
+    nonZeroMasses = masses[numpy.nonzero(masses[:,3])]
+    CM = numpy.average(nonZeroMasses[:,:3], axis=0, weights=nonZeroMasses[:,3]) 
+    return CM  
 
 #-----------------------------------
 
