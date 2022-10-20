@@ -6,6 +6,7 @@ from pygad import GA
 from numpy import abs, array, exp, sqrt, subtract
 from numpy.linalg import norm
 from time import time
+from math import log10
 
 #-----------------------------------
 
@@ -46,14 +47,14 @@ def main_genetic_algorithm(lower_range_value= -5.0, upper_range_value=5.0, mutat
     """
 
     # Mandatory parameters
-    num_generations = 15  # number of generations
+    num_generations = 30  # number of generations
     num_parents_mating = 2  # number of parents to mate
     #fitness_func = lengths_fitness_function  # user-defined fitness function
     fitness_func = coordinates_fitness_function  # (*)
     
     # Optional parameters
     initial_population = None  # user-specified initial population
-    sol_per_pop = 2000  # number of chromosomes/frames per generation
+    sol_per_pop = 500  # number of chromosomes/frames per generation
     #num_genes = 28  # number genes/bond-lengths per chromosome
     num_genes = 24  # (*)
     gene_type = float  # gene type
@@ -98,8 +99,10 @@ def main_genetic_algorithm(lower_range_value= -5.0, upper_range_value=5.0, mutat
     suppress_warnings = False
     allow_duplicate_genes = True
     stop_criteria = None  # some criteria to stop the evolution
-    parallel_processing = None
-    random_seed = 1234567  #None  # (default)
+    parallel_processing = ['process', 10] # Was: None
+    # TODO: Restore
+    # random_seed = 1234567  #None  # (default)
+    random_seed = None # (default)
 
 
     # creation of instance
@@ -208,10 +211,24 @@ def coordinates_fitness_function(chromosome, chromosome_idx):
     center = centers(chromosome)
 
     distance_from_zero = LA.norm(center,2)    
+    length_based_fitness = lengths_fitness_function(bond_lengths_list, chromosome_idx)
+    distance_based_fitness = normalized_distance_fitness(distance_from_zero)
         
-    score = lengths_fitness_function(bond_lengths_list, chromosome_idx) + (1/(distance_from_zero+0.0000001))
+    #score = length_based_fitness + distance_based_fitness
+    # TODO: Restore
+    score = length_based_fitness + 5.0* distance_based_fitness
+
+    # DEBUG LINES
+    print("Current score: %5.2f (lengths)\t %5.2f (distance)"%(length_based_fitness, distance_based_fitness))
+    #############
 
     return score
+
+MIN_MEANINGFUL_DISTANCE = 1e-3
+
+def normalized_distance_fitness(dist):
+    dist = max(dist, MIN_MEANINGFUL_DISTANCE) # TODO: Examine if 10e-3 is appropriate
+    return log10(1.0 / dist) / 3.0 # Since the max value of the ratio is 10^3, log10 maxes at 3, so normalization happens if we divide by 5
 
 # create the fitness function (1)
 def lengths_fitness_function(chromosome, chromosome_idx):
